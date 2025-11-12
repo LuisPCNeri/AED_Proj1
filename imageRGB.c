@@ -565,17 +565,24 @@ int ImageIsEqual(const Image img1, const Image img2) {
   assert(img2 != NULL);
 
   // TODO ImageIsEqual
-  int isEqual = 1;
 
-  if(img1->height != img2->height || img1->width != img2->width) isEqual = 0;
+  if(img1->height != img2->height || img1->width != img2->width) return 0;
 
   for(uint32 i = 0; i < img1->height; i++){
     for(uint32 k = 0; k < img1->width; k++){
-      
+      // Save image indexes
+
+      uint16 img1_index = img1->image[i][k];
+      uint16 img2_index = img2->image[i][k];
+
+      rgb_t img1_color = img1->LUT[img1_index];
+      rgb_t img2_color = img2->LUT[img2_index];
+
+      if(img1_color != img2_color) return 0;
     }
   }
 
-  return isEqual;
+  return 1;
 }
 
 int ImageIsDifferent(const Image img1, const Image img2) {
