@@ -11,12 +11,12 @@
 /// 2025
 
 // Student authors (fill in below):
+// NMec: 125264
+// Name: Luís Pedro Costa Néri Correia
 // NMec:
-// Name:
-// NMec:
-// Name:
+// Name: Guilherme Mendes Martins
 //
-// Date:
+// Date: 12/11/2025
 //
 
 #include "imageRGB.h"
@@ -284,10 +284,18 @@ void ImageDestroy(Image* imgp) {
 Image ImageCopy(const Image img) {
   assert(img != NULL);
 
-  // TO BE COMPLETED
-  // ...
+  // TODO ImageCopy
+  // Creates a new image with same width and height as the one passed as an argument
+  Image copied_img = ImageCreate(img->width, img->height);
 
-  return NULL;
+  for(uint32 i = 0; i < copied_img->height; i++){
+    for(uint32 k = 0; k < copied_img->width; k++){
+      // Copy all information from given image to it's copy
+      copied_img->image[i][k] = img->image[i][k];
+    }
+  }
+
+  return copied_img;
 }
 
 /// Printing on the console
@@ -556,10 +564,18 @@ int ImageIsEqual(const Image img1, const Image img2) {
   assert(img1 != NULL);
   assert(img2 != NULL);
 
-  // TO BE COMPLETED
-  // ...
+  // TODO ImageIsEqual
+  int isEqual = 1;
 
-  return 0;
+  if(img1->height != img2->height || img1->width != img2->width) isEqual = 0;
+
+  for(uint32 i = 0; i < img1->height; i++){
+    for(uint32 k = 0; k < img1->width; k++){
+      
+    }
+  }
+
+  return isEqual;
 }
 
 int ImageIsDifferent(const Image img1, const Image img2) {
@@ -586,7 +602,7 @@ int ImageIsDifferent(const Image img1, const Image img2) {
 Image ImageRotate90CW(const Image img) {
   assert(img != NULL);
 
-  // TO BE COMPLETED
+  // TODO ImageRotate90CW
   // ...
 
   return NULL;
@@ -601,7 +617,7 @@ Image ImageRotate90CW(const Image img) {
 Image ImageRotate180CW(const Image img) {
   assert(img != NULL);
 
-  // TO BE COMPLETED
+  // TODO ImageRotate180CW
   // ...
 
   return NULL;
@@ -637,7 +653,7 @@ int ImageRegionFillingRecursive(Image img, int u, int v, uint16 label) {
   assert(ImageIsValidPixel(img, u, v));
   assert(label < FIXED_LUT_SIZE);
 
-  // TO BE COMPLETED
+  // TODO ImageRegionFillingRecursive
   // ...
 
   return 0;
@@ -650,7 +666,7 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
   assert(ImageIsValidPixel(img, u, v));
   assert(label < FIXED_LUT_SIZE);
 
-  // TO BE COMPLETED
+  // TODO ImageRegionFillingWithSTACK
   // ...
 
   return 0;
@@ -663,7 +679,7 @@ int ImageRegionFillingWithQUEUE(Image img, int u, int v, uint16 label) {
   assert(ImageIsValidPixel(img, u, v));
   assert(label < FIXED_LUT_SIZE);
 
-  // TO BE COMPLETED
+  // TODO ImageRegionFillingWithQUEUE
   // ...
 
   return 0;
@@ -683,7 +699,7 @@ int ImageSegmentation(Image img, FillingFunction fillFunct) {
   assert(img != NULL);
   assert(fillFunct != NULL);
 
-  // TO BE COMPLETED
+  // TODO ImageSegmentation
   // ...
 
   return 0;
