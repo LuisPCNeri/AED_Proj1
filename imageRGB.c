@@ -616,7 +616,8 @@ int ImageIsDifferent(const Image img1, const Image img2) {
 /// On success, a new image is returned.
 /// (The caller is responsible for destroying the returned image!)
 
-/// Rotate 90 degrees clockwise (CW).
+/// Rotate 90 degrees clockwise (CW).// TODO ImageRotate90CW
+  // ...
 /// Returns a rotated version of the image.
 /// Ensures: The original img is not modified.
 ///
@@ -625,10 +626,17 @@ int ImageIsDifferent(const Image img1, const Image img2) {
 Image ImageRotate90CW(const Image img) {
   assert(img != NULL);
 
-  // TODO ImageRotate90CW
-  // ...
+  // Creates a new image whose height is equal to the original width, and whose width is equal to the original height
+  Image rotated_img = ImageCreate(img->height, img->width);
 
-  return NULL;
+  for(uint32 i = 0; i < img->width; i++){
+    for(uint32 j = 0; j < img->height; j++){
+      // pixels are properly swapped (rotated)
+      rotated_img->image[j][img->height - i - 1] = img->image[i][j];
+    }
+  }
+
+  return rotated_img;
 }
 
 /// Rotate 180 degrees clockwise (CW).
@@ -640,10 +648,16 @@ Image ImageRotate90CW(const Image img) {
 Image ImageRotate180CW(const Image img) {
   assert(img != NULL);
 
-  // TODO ImageRotate180CW
-  // ...
+  Image rotated_img = ImageCreate(img->width, img->height);
 
-  return NULL;
+  for(uint32 i = 0; i < img->width; i++){
+    for(uint32 j = 0; j < img->height; j++){
+      // pixels are properly swapped (rotated)
+      rotated_img->image[img->width - i - 1][img->height - j - 1] = img->image[i][j];
+    }
+  }
+
+  return rotated_img;
 }
 
 /// Check whether pixel coords (u, v) are inside img.
