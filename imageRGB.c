@@ -626,17 +626,24 @@ int ImageIsDifferent(const Image img1, const Image img2) {
 Image ImageRotate90CW(const Image img) {
   assert(img != NULL);
 
-  // Creates a new image whose height is equal to the original width, and whose width is equal to the original height
-  Image rotated_img = ImageCreate(img->height, img->width);
+  // Allocates a new image header whose height is equal to the original width, and whose width is equal to the original height
+  Image rotatedImg = AllocateImageHeader(img->height, img->width);
 
-  for(uint32 i = 0; i < img->width; i++){
-    for(uint32 j = 0; j < img->height; j++){
+  // Gets color labels for new image
+  rotatedImg->num_colors = img->num_colors;
+  for(int i = 2; i < rotatedImg->num_colors; i++){
+    rotatedImg->LUT[i] = img->LUT[i];
+  }
+
+  for(uint32 i = 0; i < rotatedImg->height; i++){
+    rotatedImg->image[i] = AllocateRowArray(rotatedImg->width);
+    for(uint32 j = 0; j < rotatedImg->width; j++){
       // pixels are properly swapped (rotated)
-      rotated_img->image[j][img->height - i - 1] = img->image[i][j];
+      rotatedImg->image[i][j] = img->image[img->height - j - 1][i];
     }
   }
 
-  return rotated_img;
+  return rotatedImg;
 }
 
 /// Rotate 180 degrees clockwise (CW).
@@ -648,16 +655,25 @@ Image ImageRotate90CW(const Image img) {
 Image ImageRotate180CW(const Image img) {
   assert(img != NULL);
 
-  Image rotated_img = ImageCreate(img->width, img->height);
+  // Allocs space for new image with img->width and img->height
+  Image rotatedImg = AllocateImageHeader(img->width, img->height);
+  
+  rotatedImg->num_colors = img->num_colors;
+  // Set all color labels in new rotated image
+  for(int i = 2; i < rotatedImg->num_colors; i++){
+    rotatedImg->LUT[i] = img->LUT[i];
+  }
 
-  for(uint32 i = 0; i < img->width; i++){
-    for(uint32 j = 0; j < img->height; j++){
+  for(uint32 i = 0; i < rotatedImg->height; i++){
+    // Alloc space for image row
+    rotatedImg->image[i] = AllocateRowArray(img->width);
+    for(uint32 j = 0; j < rotatedImg->width; j++){
       // pixels are properly swapped (rotated)
-      rotated_img->image[img->width - i - 1][img->height - j - 1] = img->image[i][j];
+      rotatedImg->image[i][j] = img->image[img->height - i - 1][img->width - j - 1];
     }
   }
 
-  return rotated_img;
+  return rotatedImg;
 }
 
 /// Check whether pixel coords (u, v) are inside img.

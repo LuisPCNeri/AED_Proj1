@@ -78,6 +78,25 @@ int main(int argc, char* argv[]) {
   if(ImageIsEqual(feepImg, copy_feep)) printf("Images are equal\n");
   else printf("Copied images are not equal? lol\n");
 
+  ImageDestroy(&copy_feep);
+
+  printf("10) Rotate 90 degress CW\n");
+  Image feep_90 = ImageRotate90CW(feepImg);
+  ImageSavePPM(feep_90, "img/feep_90.ppm");
+
+  if(ImageIsEqual(feepImg, feep_90)) printf("Images are equal\n");
+  else printf("Images are not equal\n");
+
+  ImageDestroy(&feep_90);
+
+  printf("11) Rotate 180 degress CW\n");
+  Image feep_180 = ImageRotate180CW(feepImg);
+  ImageSavePPM(feep_180, "img/feep_180.ppm");
+
+  if(ImageIsEqual(feepImg, feep_180)) printf("Images are equal\n");
+  else printf("Images are not equal\n");
+
+  ImageDestroy(&feep_180);
 
 
   ImageDestroy(&white_image);
