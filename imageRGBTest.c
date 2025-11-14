@@ -67,6 +67,19 @@ int main(int argc, char* argv[]) {
   Image image_3 = ImageCreatePalete(4 * 32, 4 * 32, 4);
   ImageSavePPM(image_3, "palete.ppm");
 
+  // Self made tests from here on out
+
+  printf("9) ImageIsEqual\n");
+  Image feepImg = ImageLoadPPM("img/feep.ppm");
+  Image copy_feep = ImageCopy(feepImg);
+
+  ImageSavePPM(copy_feep, "img/copy_feep.ppm");
+
+  if(ImageIsEqual(feepImg, copy_feep)) printf("Images are equal\n");
+  else printf("Copied images are not equal? lol\n");
+
+
+
   ImageDestroy(&white_image);
   ImageDestroy(&black_image);
   if (copy_image != NULL) {

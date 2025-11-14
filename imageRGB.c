@@ -286,9 +286,22 @@ Image ImageCopy(const Image img) {
 
   // TODO ImageCopy
   // Creates a new image with same width and height as the one passed as an argument
-  Image copied_img = ImageCreate(img->width, img->height);
+
+  Image copied_img = AllocateImageHeader(img->width, img->height);
+  //Image copied_img = ImageCreate(img->width, img->height);
+
+  // Copy the amount of color labels used
+  copied_img->num_colors = img->num_colors;
+
+  // Copy the labels to their respective index in the LUT table
+  // i = 2 since ALL images are inicialized with 2 colors already in the LUT table
+  for(int i = 2; i < copied_img->num_colors; i++){
+    copied_img->LUT[i] = img->LUT[i];
+  }
 
   for(uint32 i = 0; i < copied_img->height; i++){
+    // Make space in row to have all values
+    copied_img->image[i] = AllocateRowArray(copied_img->width);
     for(uint32 k = 0; k < copied_img->width; k++){
       // Copy all information from given image to it's copy
       copied_img->image[i][k] = img->image[i][k];
@@ -575,6 +588,9 @@ int ImageIsEqual(const Image img1, const Image img2) {
       uint16 img1_index = img1->image[i][k];
       uint16 img2_index = img2->image[i][k];
 
+      // Pixel's array was accessed once for both images so
+      PIXMEM += 2;
+
       rgb_t img1_color = img1->LUT[img1_index];
       rgb_t img2_color = img2->LUT[img2_index];
 
@@ -661,7 +677,44 @@ int ImageRegionFillingRecursive(Image img, int u, int v, uint16 label) {
   assert(label < FIXED_LUT_SIZE);
 
   // TODO ImageRegionFillingRecursive
-  // ...
+
+  int pixels_changed = 0;
+
+  // Color of seed
+  rgb_t seed_color = img->LUT[img->image[u][v]];
+
+  // Get color of adjacent pixels
+  rgb_t img_up_color = img->LUT[img->image[u+1][v]];
+  rgb_t img_down_color = img->LUT[img->image[u-1][v]];
+  rgb_t img_left_color = img->LUT[img->image[u][v-1]];
+  rgb_t img_right_color = img->LUT[img->image[u][v+1]];
+
+  // If adjacent pixel is the same color as seed SET it to label color and add 1 to PIXELS_CHANGED
+  // In the end return number of pixels changed
+
+  if(seed_color == img_up_color){
+    img->image[u+1][v] = label;
+    pixels_changed++;
+  }
+  else if(seed_color == img_down_color){
+    img->image[u-1][v] = label;
+    pixels_changed++;
+  }
+  else if(seed_color == img_left_color){
+    img->image[u][v-1] = label;
+    pixels_changed++;
+  }
+  else if(seed_color == img_right_color){
+    img->image[u][v+1] = label;
+    pixels_changed++;
+  }
+  else{
+    // If NO adjacent pixels are same color return 0
+    return 0;
+  }
+
+  // Call function again for ALL adjacent pixels, something like
+  // return func(img , u + 1, v, label) + func(img, u - 1, v, label) + func(img, u, v + 1, label) + func(img, u, v - 1, label)
 
   return 0;
 }
