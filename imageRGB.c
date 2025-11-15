@@ -707,46 +707,37 @@ int ImageRegionFillingRecursive(Image img, int u, int v, uint16 label) {
   assert(label < FIXED_LUT_SIZE);
 
   // TODO ImageRegionFillingRecursive
-
+  
   int pixels_changed = 0;
+  // Label of seed
+  uint16 oldLabel = img->image[v][u];
+  // Check if pixel's old label is already the same as the new one and if so return 0 as no pixels would need changing
+  if(oldLabel == label) return pixels_changed;
 
-  // Color of seed
-  rgb_t seed_color = img->LUT[img->image[u][v]];
+  // Change the label of current pixel to the new label
+  img->image[v][u] = label;
+  pixels_changed++;
 
-  // Get color of adjacent pixels
-  rgb_t img_up_color = img->LUT[img->image[u+1][v]];
-  rgb_t img_down_color = img->LUT[img->image[u-1][v]];
-  rgb_t img_left_color = img->LUT[img->image[u][v-1]];
-  rgb_t img_right_color = img->LUT[img->image[u][v+1]];
-
-  // If adjacent pixel is the same color as seed SET it to label color and add 1 to PIXELS_CHANGED
-  // In the end return number of pixels changed
-
-  if(seed_color == img_up_color){
-    img->image[u+1][v] = label;
-    pixels_changed++;
+  // If adjacent pixel is the same color as seed run the function again on it and add the return value of that call to pixels_changed
+  if((uint32) u+1 < img->width && oldLabel == img->image[v][u+1]){
+    // Call function again for pixel on the right
+    pixels_changed += ImageRegionFillingRecursive(img, u+1 , v, label);
   }
-  else if(seed_color == img_down_color){
-    img->image[u-1][v] = label;
-    pixels_changed++;
+  if( (u-1) >= 0 && oldLabel == img->image[v][u-1]){
+    // Call function again for pixel on the left
+    pixels_changed += ImageRegionFillingRecursive(img, u-1, v, label);
   }
-  else if(seed_color == img_left_color){
-    img->image[u][v-1] = label;
-    pixels_changed++;
+  if( (v-1) >= 0 && oldLabel == img->image[v-1][u]){
+    // Call function again for pixel bellow
+    pixels_changed += ImageRegionFillingRecursive(img, u, v-1, label);
   }
-  else if(seed_color == img_right_color){
-    img->image[u][v+1] = label;
-    pixels_changed++;
-  }
-  else{
-    // If NO adjacent pixels are same color return 0
-    return 0;
+  if((uint32) v+1 < img->height && oldLabel == img->image[v+1][u]){
+    // Call function again for pixel above
+    pixels_changed += ImageRegionFillingRecursive(img, u, v+1, label);
   }
 
-  // Call function again for ALL adjacent pixels, something like
-  // return func(img , u + 1, v, label) + func(img, u - 1, v, label) + func(img, u, v + 1, label) + func(img, u, v - 1, label)
-
-  return 0;
+  // No pixels matched the similar color
+  return pixels_changed;
 }
 
 /// Region growing using a STACK of pixel coordinates to

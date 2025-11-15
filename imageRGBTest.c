@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 
   printf("5) ImageCopy\n");
   Image copy_image = ImageCopy(image_chess_1);
-  // ImageRAWPrint(copy_image);
+  ImageRAWPrint(copy_image);
   if (copy_image != NULL) {
     ImageSavePBM(copy_image, "copy_image.pbm");
   }
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
   ImageSavePPM(copy_feep, "img/copy_feep.ppm");
 
   if(ImageIsEqual(feepImg, copy_feep)) printf("Images are equal\n");
-  else printf("Copied images are not equal? lol\n");
+  else printf("Images are not equal\n");
 
   ImageDestroy(&copy_feep);
 
@@ -98,6 +98,19 @@ int main(int argc, char* argv[]) {
 
   ImageDestroy(&feep_180);
 
+  printf("12) Recursive Region filling\n");
+  Image feep_copy = ImageCopy(feepImg);
+  ImageSavePPM(feep_copy, "img/feep_copy.ppm");
+
+  int pixels_changed = ImageRegionFillingRecursive(feep_copy, 10, 3, 1);
+  ImageSavePPM(feep_copy, "img/feep_copy_rec.ppm");
+  printf("PIXELS CHANGED: %d\n", pixels_changed);
+
+  if(ImageIsEqual(feepImg, feep_copy)) printf("Images are equal\n");
+  else printf("Images are not equal\n");
+
+  ImageDestroy(&feep_copy);
+
 
   ImageDestroy(&white_image);
   ImageDestroy(&black_image);
@@ -109,6 +122,8 @@ int main(int argc, char* argv[]) {
   ImageDestroy(&image_1);
   ImageDestroy(&image_2);
   ImageDestroy(&image_3);
+
+  ImageDestroy(&feepImg);
 
   return 0;
 }
