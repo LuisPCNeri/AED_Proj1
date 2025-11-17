@@ -286,9 +286,22 @@ Image ImageCopy(const Image img) {
 
   // TODO ImageCopy
   // Creates a new image with same width and height as the one passed as an argument
-  Image copied_img = ImageCreate(img->width, img->height);
+
+  Image copied_img = AllocateImageHeader(img->width, img->height);
+  //Image copied_img = ImageCreate(img->width, img->height);
+
+  // Copy the amount of color labels used
+  copied_img->num_colors = img->num_colors;
+
+  // Copy the labels to their respective index in the LUT table
+  // i = 2 since ALL images are inicialized with 2 colors already in the LUT table
+  for(int i = 2; i < copied_img->num_colors; i++){
+    copied_img->LUT[i] = img->LUT[i];
+  }
 
   for(uint32 i = 0; i < copied_img->height; i++){
+    // Make space in row to have all values
+    copied_img->image[i] = AllocateRowArray(copied_img->width);
     for(uint32 k = 0; k < copied_img->width; k++){
       // Copy all information from given image to it's copy
       copied_img->image[i][k] = img->image[i][k];
@@ -575,6 +588,9 @@ int ImageIsEqual(const Image img1, const Image img2) {
       uint16 img1_index = img1->image[i][k];
       uint16 img2_index = img2->image[i][k];
 
+      // Pixel's array was accessed once for both images so
+      PIXMEM += 2;
+
       rgb_t img1_color = img1->LUT[img1_index];
       rgb_t img2_color = img2->LUT[img2_index];
 
@@ -610,17 +626,24 @@ int ImageIsDifferent(const Image img1, const Image img2) {
 Image ImageRotate90CW(const Image img) {
   assert(img != NULL);
 
-  // Creates a new image whose height is equal to the original width, and whose width is equal to the original height
-  Image rotated_img = ImageCreate(img->height, img->width);
+  // Allocates a new image header whose height is equal to the original width, and whose width is equal to the original height
+  Image rotatedImg = AllocateImageHeader(img->height, img->width);
 
-  for(uint32 i = 0; i < img->width; i++){
-    for(uint32 j = 0; j < img->height; j++){
+  // Gets color labels for new image
+  rotatedImg->num_colors = img->num_colors;
+  for(int i = 2; i < rotatedImg->num_colors; i++){
+    rotatedImg->LUT[i] = img->LUT[i];
+  }
+
+  for(uint32 i = 0; i < rotatedImg->height; i++){
+    rotatedImg->image[i] = AllocateRowArray(rotatedImg->width);
+    for(uint32 j = 0; j < rotatedImg->width; j++){
       // pixels are properly swapped (rotated)
-      rotated_img->image[j][img->height - i - 1] = img->image[i][j];
+      rotatedImg->image[i][j] = img->image[img->height - j - 1][i];
     }
   }
 
-  return rotated_img;
+  return rotatedImg;
 }
 
 /// Rotate 180 degrees clockwise (CW).
@@ -632,16 +655,25 @@ Image ImageRotate90CW(const Image img) {
 Image ImageRotate180CW(const Image img) {
   assert(img != NULL);
 
-  Image rotated_img = ImageCreate(img->width, img->height);
+  // Allocs space for new image with img->width and img->height
+  Image rotatedImg = AllocateImageHeader(img->width, img->height);
+  
+  rotatedImg->num_colors = img->num_colors;
+  // Set all color labels in new rotated image
+  for(int i = 2; i < rotatedImg->num_colors; i++){
+    rotatedImg->LUT[i] = img->LUT[i];
+  }
 
-  for(uint32 i = 0; i < img->width; i++){
-    for(uint32 j = 0; j < img->height; j++){
+  for(uint32 i = 0; i < rotatedImg->height; i++){
+    // Alloc space for image row
+    rotatedImg->image[i] = AllocateRowArray(img->width);
+    for(uint32 j = 0; j < rotatedImg->width; j++){
       // pixels are properly swapped (rotated)
-      rotated_img->image[img->width - i - 1][img->height - j - 1] = img->image[i][j];
+      rotatedImg->image[i][j] = img->image[img->height - i - 1][img->width - j - 1];
     }
   }
 
-  return rotated_img;
+  return rotatedImg;
 }
 
 /// Check whether pixel coords (u, v) are inside img.
@@ -675,9 +707,37 @@ int ImageRegionFillingRecursive(Image img, int u, int v, uint16 label) {
   assert(label < FIXED_LUT_SIZE);
 
   // TODO ImageRegionFillingRecursive
-  // ...
+  
+  int pixels_changed = 0;
+  // Label of seed
+  uint16 oldLabel = img->image[v][u];
+  // Check if pixel's old label is already the same as the new one and if so return 0 as no pixels would need changing
+  if(oldLabel == label) return pixels_changed;
 
-  return 0;
+  // Change the label of current pixel to the new label
+  img->image[v][u] = label;
+  pixels_changed++;
+
+  // If adjacent pixel is the same color as seed run the function again on it and add the return value of that call to pixels_changed
+  if((uint32) u+1 < img->width && oldLabel == img->image[v][u+1]){
+    // Call function again for pixel on the right
+    pixels_changed += ImageRegionFillingRecursive(img, u+1 , v, label);
+  }
+  if( (u-1) >= 0 && oldLabel == img->image[v][u-1]){
+    // Call function again for pixel on the left
+    pixels_changed += ImageRegionFillingRecursive(img, u-1, v, label);
+  }
+  if( (v-1) >= 0 && oldLabel == img->image[v-1][u]){
+    // Call function again for pixel bellow
+    pixels_changed += ImageRegionFillingRecursive(img, u, v-1, label);
+  }
+  if((uint32) v+1 < img->height && oldLabel == img->image[v+1][u]){
+    // Call function again for pixel above
+    pixels_changed += ImageRegionFillingRecursive(img, u, v+1, label);
+  }
+
+  // No pixels matched the similar color
+  return pixels_changed;
 }
 
 /// Region growing using a STACK of pixel coordinates to
