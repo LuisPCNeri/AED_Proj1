@@ -109,8 +109,19 @@ int main(int argc, char* argv[]) {
   if(ImageIsEqual(feepImg, feep_copy)) printf("Images are equal\n");
   else printf("Images are not equal\n");
 
-  ImageDestroy(&feep_copy);
 
+  printf("13) Image Region Filling with STACK\n");
+  Image feep_copy_stack = ImageCopy(feepImg);
+
+  pixels_changed = ImageRegionFillingWithSTACK(feep_copy_stack, 10, 3, 1);
+  ImageSavePPM(feep_copy_stack, "img/feep_copy_stack.ppm");
+  printf("PIXELS CHANGED STACK: %d\n", pixels_changed);
+
+  if(ImageIsEqual(feep_copy, feep_copy_stack)) printf("Images are equal\n");
+  else printf("Images are not equal\n");
+
+  ImageDestroy(&feep_copy);
+  ImageDestroy(&feep_copy_stack);
 
   ImageDestroy(&white_image);
   ImageDestroy(&black_image);
