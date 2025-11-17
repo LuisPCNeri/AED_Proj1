@@ -125,5 +125,12 @@ int main(int argc, char* argv[]) {
 
   ImageDestroy(&feepImg);
 
+  // ------------------------------------------
+  // chess img
+  printf("15) Image Segmentation\n");
+  Image segmentationTestImg = ImageLoadPBM("chess_image_1.pbm");
+  ImageSegmentation(segmentationTestImg, ImageRegionFillingRecursive);
+  ImageSavePPM(segmentationTestImg, "segmentationTestImg.ppm");
+
   return 0;
 }

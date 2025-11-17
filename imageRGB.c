@@ -787,7 +787,7 @@ int ImageSegmentation(Image img, FillingFunction fillFunct) {
   // iterating over each pixel
   for (uint32 i = 0; i < ImageWidth(img); i++) {
     for (uint32 j = 0; j < ImageHeight(img); j++) {
-      if (img->image[i][j] == 0) {
+      if (img->image[j][i] == 0) {
         regionCounter++;
         PIXMEM++;
         fillFunct(img, i, j,  LUTAllocColor(img, GenerateNextColor(colorWHITE)));
