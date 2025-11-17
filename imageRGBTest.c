@@ -123,6 +123,15 @@ int main(int argc, char* argv[]) {
   ImageDestroy(&feep_copy);
   ImageDestroy(&feep_copy_stack);
 
+  // ------------------------------------------
+  // chess img
+  printf("15) Image Segmentation\n");
+  Image segmentationTestImg = ImageLoadPBM("chess_image_1.pbm");
+  ImageSegmentation(segmentationTestImg, ImageRegionFillingRecursive);
+  ImageSavePPM(segmentationTestImg, "img/segmentationTestImg.ppm");
+
+  ImageDestroy(&segmentationTestImg);
+
   ImageDestroy(&white_image);
   ImageDestroy(&black_image);
   if (copy_image != NULL) {
@@ -135,13 +144,6 @@ int main(int argc, char* argv[]) {
   ImageDestroy(&image_3);
 
   ImageDestroy(&feepImg);
-
-  // ------------------------------------------
-  // chess img
-  printf("15) Image Segmentation\n");
-  Image segmentationTestImg = ImageLoadPBM("chess_image_1.pbm");
-  ImageSegmentation(segmentationTestImg, ImageRegionFillingRecursive);
-  ImageSavePPM(segmentationTestImg, "segmentationTestImg.ppm");
 
   return 0;
 }
