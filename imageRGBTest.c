@@ -125,12 +125,19 @@ int main(int argc, char* argv[]) {
 
   ImageDestroy(&feepImg);
 
-  // ------------------------------------------
+  printf("14) Flood fill with queue\n");
+  Image floodFillQueueTestImg = ImageLoadPBM("chess_image_1.pbm");
+  ImageRegionFillingWithQUEUE(floodFillQueueTestImg, 15, 10, 0);
+  ImageSavePPM(floodFillQueueTestImg, "floodFillQueueTestImg.ppm");
+
   // chess img
   printf("15) Image Segmentation\n");
   Image segmentationTestImg = ImageLoadPBM("chess_image_1.pbm");
   ImageSegmentation(segmentationTestImg, ImageRegionFillingRecursive);
   ImageSavePPM(segmentationTestImg, "segmentationTestImg.ppm");
+
+  ImageDestroy(&floodFillQueueTestImg);
+  ImageDestroy(&segmentationTestImg);
 
   return 0;
 }
