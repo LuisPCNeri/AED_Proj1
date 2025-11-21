@@ -584,7 +584,14 @@ int ImageIsEqual(const Image img1, const Image img2) {
 
   // TODO ImageIsEqual
 
-  if(img1->height != img2->height || img1->width != img2->width) return 0;
+  COMPMEM+=2; // Two comparisons made, one for height and other for width
+  if(img1->height != img2->height || img1->width != img2->width){
+    // Print number of comparisons before exiting
+    printf("COMPARISONS MADE: %ld\n", COMPMEM);
+    COMPMEM = 0;    // Reset COMPMEM
+    
+    return 0;
+  }
 
   for(uint32 i = 0; i < img1->height; i++){
     for(uint32 k = 0; k < img1->width; k++){
@@ -599,9 +606,20 @@ int ImageIsEqual(const Image img1, const Image img2) {
       rgb_t img1_color = img1->LUT[img1_index];
       rgb_t img2_color = img2->LUT[img2_index];
 
-      if(img1_color != img2_color) return 0;
+      COMPMEM++; // One comparisons made for pixel colors
+      if(img1_color != img2_color){
+        // Print number of comparisons before exiting
+        printf("COMPARISONS MADE: %ld\n", COMPMEM);
+        COMPMEM = 0;    // Reset COMPMEM
+
+        return 0;
+      }
     }
   }
+
+  // Print number of comparisons before exiting
+  printf("COMPARISONS MADE: %ld\n", COMPMEM);
+  COMPMEM = 0;    // Reset COMPMEM
 
   return 1;
 }
