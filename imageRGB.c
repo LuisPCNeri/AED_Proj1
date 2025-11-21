@@ -825,6 +825,8 @@ int ImageRegionFillingWithQUEUE(Image img, int u, int v, uint16 label) {
     assert(ImageIsValidPixel(img, u, v));
     assert(label < FIXED_LUT_SIZE);
 
+    unsigned int lPixels = 0; // labeled pixels
+
     PixelCoords startNode = PixelCoordsCreate(u, v);
     Queue* pixelQueue = QueueCreate(img->height * img->width);
     QueueEnqueue(pixelQueue, startNode);
@@ -832,26 +834,22 @@ int ImageRegionFillingWithQUEUE(Image img, int u, int v, uint16 label) {
     uint16 targetColor = img->image[v][u];
 
     while (!QueueIsEmpty(pixelQueue)) {
-        PixelCoords n = QueueDequeue(pixelQueue);
-        if (!ImageIsValidPixel(img, n.u, n.v)) continue;
+        PixelCoords cPixel = QueueDequeue(pixelQueue); // current pixel
 
-        if (img->image[n.v][n.u] == targetColor) {
-            if (img->image[n.v][n.u] == targetColor) {
-              img->image[n.v][n.u] = label; // paint pixel
-            } else {
-                continue; // skip already labeled pixels
-            }
+        if (img->image[cPixel.v][cPixel.u] == targetColor) {
+            img->image[cPixel.v][cPixel.u] = label; // paint pixel
+            lPixels++;
             
             // enqueue neighbors
-            if (ImageIsValidPixel(img, n.u, n.v-1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(n.u, n.v-1)); // north
-            if (ImageIsValidPixel(img, n.u, n.v+1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(n.u, n.v+1)); // south
-            if (ImageIsValidPixel(img, n.u-1, n.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(n.u-1, n.v)); // west
-            if (ImageIsValidPixel(img, n.u+1, n.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(n.u+1, n.v)); // east
+            if (ImageIsValidPixel(img, cPixel.u, cPixel.v-1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u, cPixel.v-1)); // north
+            if (ImageIsValidPixel(img, cPixel.u, cPixel.v+1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u, cPixel.v+1)); // south
+            if (ImageIsValidPixel(img, cPixel.u-1, cPixel.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u-1, cPixel.v)); // west
+            if (ImageIsValidPixel(img, cPixel.u+1, cPixel.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u+1, cPixel.v)); // east
         }
     }
 
     QueueDestroy(&pixelQueue); // free queue memory
-    return 0;
+    return lPixels;
 }
 
 
@@ -874,8 +872,8 @@ int ImageSegmentation(Image img, FillingFunction fillFunct) {
   rgb_t colorWHITE = 0xffffff;
 
   // iterating over each pixel
-  for (uint32 j = 0; j < ImageWidth(img); j++) {
-    for (uint32 i = 0; i < ImageHeight(img); i++) {
+  for (uint32 j = 0; j < img->height; j++) {
+    for (uint32 i = 0; i < img->width; i++) {
       if (img->image[j][i] == 0) {
         regionCounter++;
         PIXMEM++;

@@ -123,14 +123,37 @@ int main(int argc, char* argv[]) {
   ImageDestroy(&feep_copy);
   ImageDestroy(&feep_copy_stack);
 
+  printf("14) Flood fill with queue\n");
+  Image floodFillQueueTestImg = ImageLoadPBM("chess_image_1.pbm");
+  pixels_changed = ImageRegionFillingWithQUEUE(floodFillQueueTestImg, 15, 10, 128);
+  printf("PIXELS CHANGED QUEUE: %d\n", pixels_changed);
+  ImageSavePPM(floodFillQueueTestImg, "img/floodFillQueueTestImg.ppm");
+
+  ImageDestroy(&floodFillQueueTestImg);
+
   // ------------------------------------------
   // chess img
-  printf("15) Image Segmentation\n");
+  printf("15) Image Segmentation Recursive\n");
   Image segmentationTestImg = ImageLoadPBM("chess_image_1.pbm");
-  ImageSegmentation(segmentationTestImg, ImageRegionFillingRecursive);
+  int regFound = ImageSegmentation(segmentationTestImg, ImageRegionFillingRecursive);
+  printf("Found %d regions with RECURSIVE\n", regFound);
   ImageSavePPM(segmentationTestImg, "img/segmentationTestImg.ppm");
 
+  printf("16) Image Segmentation Stack\n");
+  Image segmentationTestImgS = ImageLoadPBM("chess_image_1.pbm");
+  regFound = ImageSegmentation(segmentationTestImgS, ImageRegionFillingWithSTACK);
+  printf("Found %d regions with STACK\n", regFound);
+  ImageSavePPM(segmentationTestImgS, "img/segmentationTestImgS.ppm");
+
+  printf("17) Image Segmentation Queue\n");
+  Image segmentationTestImgQ = ImageLoadPBM("chess_image_1.pbm");
+  regFound = ImageSegmentation(segmentationTestImgQ, ImageRegionFillingWithQUEUE);
+  printf("Found %d regions with QUEUE\n", regFound);
+  ImageSavePPM(segmentationTestImgQ, "img/segmentationTestImgQ.ppm");
+
   ImageDestroy(&segmentationTestImg);
+  ImageDestroy(&segmentationTestImgS);
+  ImageDestroy(&segmentationTestImgQ);
 
   ImageDestroy(&white_image);
   ImageDestroy(&black_image);
@@ -145,19 +168,10 @@ int main(int argc, char* argv[]) {
 
   ImageDestroy(&feepImg);
 
-  printf("14) Flood fill with queue\n");
-  Image floodFillQueueTestImg = ImageLoadPBM("chess_image_1.pbm");
-  ImageRegionFillingWithQUEUE(floodFillQueueTestImg, 15, 10, 0);
-  ImageSavePPM(floodFillQueueTestImg, "floodFillQueueTestImg.ppm");
+
 
   // chess img
-  printf("15) Image Segmentation\n");
-  Image segmentationTestImg = ImageLoadPBM("chess_image_1.pbm");
-  ImageSegmentation(segmentationTestImg, ImageRegionFillingRecursive);
-  ImageSavePPM(segmentationTestImg, "segmentationTestImg.ppm");
-
-  ImageDestroy(&floodFillQueueTestImg);
-  ImageDestroy(&segmentationTestImg);
+  
 
   return 0;
 }
