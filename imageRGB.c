@@ -814,15 +814,40 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
 /// Region growing using a QUEUE of pixel coordinates to
 /// implement the flood-filling algorithm.
 int ImageRegionFillingWithQUEUE(Image img, int u, int v, uint16 label) {
-  assert(img != NULL);
-  assert(ImageIsValidPixel(img, u, v));
-  assert(label < FIXED_LUT_SIZE);
 
-  // TODO ImageRegionFillingWithQUEUE
-  // ...
+    assert(img != NULL);
+    assert(ImageIsValidPixel(img, u, v));
+    assert(label < FIXED_LUT_SIZE);
 
-  return 0;
+    PixelCoords startNode = PixelCoordsCreate(u, v);
+    Queue* pixelQueue = QueueCreate(img->height * img->width);
+    QueueEnqueue(pixelQueue, startNode);
+
+    uint16 targetColor = img->image[v][u];
+
+    while (!QueueIsEmpty(pixelQueue)) {
+        PixelCoords n = QueueDequeue(pixelQueue);
+        if (!ImageIsValidPixel(img, n.u, n.v)) continue;
+
+        if (img->image[n.v][n.u] == targetColor) {
+            if (img->image[n.v][n.u] == targetColor) {
+              img->image[n.v][n.u] = label; // paint pixel
+            } else {
+                continue; // skip already labeled pixels
+            }
+            
+            // enqueue neighbors
+            if (ImageIsValidPixel(img, n.u, n.v-1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(n.u, n.v-1)); // north
+            if (ImageIsValidPixel(img, n.u, n.v+1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(n.u, n.v+1)); // south
+            if (ImageIsValidPixel(img, n.u-1, n.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(n.u-1, n.v)); // west
+            if (ImageIsValidPixel(img, n.u+1, n.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(n.u+1, n.v)); // east
+        }
+    }
+
+    QueueDestroy(&pixelQueue); // free queue memory
+    return 0;
 }
+
 
 /// Image Segmentation
 
@@ -843,8 +868,8 @@ int ImageSegmentation(Image img, FillingFunction fillFunct) {
   rgb_t colorWHITE = 0xffffff;
 
   // iterating over each pixel
-  for (uint32 i = 0; i < ImageWidth(img); i++) {
-    for (uint32 j = 0; j < ImageHeight(img); j++) {
+  for (uint32 j = 0; j < ImageWidth(img); j++) {
+    for (uint32 i = 0; i < ImageHeight(img); i++) {
       if (img->image[j][i] == 0) {
         regionCounter++;
         PIXMEM++;
