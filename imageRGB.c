@@ -773,13 +773,6 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
   uint16 startLabel = img->image[v][u];
   PIXMEM++; // Acessed array to get startLabel
 
-  if(startLabel == label) return 0;
-
-  // Set start pixel to new label
-  img->image[v][u] = label;
-  pixelsChanged++;
-  PIXMEM++;
-
   StackPush(pStack, startPixel);
 
   // Loop through stack's contents
@@ -787,38 +780,17 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
     // Use first item of stack (currentPixel)
     PixelCoords cPixel = StackPop(pStack);
 
-    if( ImageIsValidPixel(img, cPixel.u+1, cPixel.v) && img->image[cPixel.v][cPixel.u+1] == startLabel ){
-      // Change pixel color
-      img->image[cPixel.v][cPixel.u+1] = label;
-      StackPush(pStack, PixelCoordsCreate(cPixel.u+1,cPixel.v));
-      // Increments
-      pixelsChanged++;
-      PIXMEM+=2;
-    }
-    if( ImageIsValidPixel(img, cPixel.u-1, cPixel.v) && img->image[cPixel.v][cPixel.u-1] == startLabel ){
-      // Change pixel color
-      img->image[cPixel.v][cPixel.u-1] = label;
-      StackPush(pStack, PixelCoordsCreate(cPixel.u-1,cPixel.v));
-      // Increments
-      pixelsChanged++;
-      PIXMEM+=2;
-    }
-    if( ImageIsValidPixel(img, cPixel.u, cPixel.v+1) && img->image[cPixel.v+1][cPixel.u] == startLabel ){
-      // Change pixel color
-      img->image[cPixel.v+1][cPixel.u] = label;
-      StackPush(pStack, PixelCoordsCreate(cPixel.u,cPixel.v+1));
-      // Increments
-      pixelsChanged++;
-      PIXMEM+=2;
-    }
-    if( ImageIsValidPixel(img, cPixel.u, cPixel.v-1) && img->image[cPixel.v-1][cPixel.u] == startLabel ){
-      // Change pixel color
-      img->image[cPixel.v-1][cPixel.u] = label;
-      StackPush(pStack, PixelCoordsCreate(cPixel.u,cPixel.v-1));
-      // Increments
-      pixelsChanged++;
-      PIXMEM+=2;
-    }
+    // If pixel does not match starting label do nothing
+    if( img->image[cPixel.v][cPixel.u] != startLabel) continue;
+
+    img->image[cPixel.v][cPixel.u] = label;
+    pixelsChanged++;
+    PIXMEM+=2;
+    
+    if( ImageIsValidPixel(img, cPixel.u+1, cPixel.v) ) StackPush(pStack, PixelCoordsCreate(cPixel.u+1,cPixel.v));
+    if( ImageIsValidPixel(img, cPixel.u-1, cPixel.v) ) StackPush(pStack, PixelCoordsCreate(cPixel.u-1,cPixel.v));
+    if( ImageIsValidPixel(img, cPixel.u, cPixel.v+1) ) StackPush(pStack, PixelCoordsCreate(cPixel.u,cPixel.v+1));
+    if( ImageIsValidPixel(img, cPixel.u, cPixel.v-1) ) StackPush(pStack, PixelCoordsCreate(cPixel.u,cPixel.v-1));
   }
 
   StackDestroy(&pStack);
@@ -841,6 +813,7 @@ int ImageRegionFillingWithQUEUE(Image img, int u, int v, uint16 label) {
     QueueEnqueue(pixelQueue, startNode);
 
     uint16 targetColor = img->image[v][u];
+    PIXMEM++;
 
     while (!QueueIsEmpty(pixelQueue)) {
         PixelCoords cPixel = QueueDequeue(pixelQueue); // current pixel
