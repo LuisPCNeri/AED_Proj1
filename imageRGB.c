@@ -94,11 +94,14 @@ void ImageInit(void) {  ///
   InstrCalibrate();
   InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
   // Name other counters here...
+  InstrName[1] = "compmem";
 }
 
 // Macros to simplify accessing instrumentation counters:
 #define PIXMEM InstrCount[0]
 // Add more macros here...
+// MACRO to count comparisons in imageIsEqual
+#define COMPMEM InstrCount[1]
 
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
 
@@ -305,6 +308,8 @@ Image ImageCopy(const Image img) {
     for(uint32 k = 0; k < copied_img->width; k++){
       // Copy all information from given image to it's copy
       copied_img->image[i][k] = img->image[i][k];
+      // Once for each image
+      PIXMEM+=2;
     }
   }
 
@@ -640,6 +645,8 @@ Image ImageRotate90CW(const Image img) {
     for(uint32 j = 0; j < rotatedImg->width; j++){
       // pixels are properly swapped (rotated)
       rotatedImg->image[i][j] = img->image[img->height - j - 1][i];
+      // Once for each image
+      PIXMEM+=2;
     }
   }
 
@@ -670,6 +677,8 @@ Image ImageRotate180CW(const Image img) {
     for(uint32 j = 0; j < rotatedImg->width; j++){
       // pixels are properly swapped (rotated)
       rotatedImg->image[i][j] = img->image[img->height - i - 1][img->width - j - 1];
+      // Once for each image
+      PIXMEM+=2;
     }
   }
 
@@ -836,16 +845,20 @@ int ImageRegionFillingWithQUEUE(Image img, int u, int v, uint16 label) {
     while (!QueueIsEmpty(pixelQueue)) {
         PixelCoords cPixel = QueueDequeue(pixelQueue); // current pixel
 
-        if (img->image[cPixel.v][cPixel.u] == targetColor) {
-            img->image[cPixel.v][cPixel.u] = label; // paint pixel
-            lPixels++;
+        // If current pixel is not correct color skip over it
+        if (img->image[cPixel.v][cPixel.u] != targetColor) continue;
+        
+        img->image[cPixel.v][cPixel.u] = label; // paint pixel
+        lPixels++;
+        // Once in comparison and once to change the color
+        PIXMEM+=2;
             
-            // enqueue neighbors
-            if (ImageIsValidPixel(img, cPixel.u, cPixel.v-1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u, cPixel.v-1)); // north
-            if (ImageIsValidPixel(img, cPixel.u, cPixel.v+1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u, cPixel.v+1)); // south
-            if (ImageIsValidPixel(img, cPixel.u-1, cPixel.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u-1, cPixel.v)); // west
-            if (ImageIsValidPixel(img, cPixel.u+1, cPixel.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u+1, cPixel.v)); // east
-        }
+        // enqueue neighbors
+        if (ImageIsValidPixel(img, cPixel.u, cPixel.v-1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u, cPixel.v-1)); // north
+        if (ImageIsValidPixel(img, cPixel.u, cPixel.v+1)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u, cPixel.v+1)); // south
+        if (ImageIsValidPixel(img, cPixel.u-1, cPixel.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u-1, cPixel.v)); // west
+        if (ImageIsValidPixel(img, cPixel.u+1, cPixel.v)) QueueEnqueue(pixelQueue, PixelCoordsCreate(cPixel.u+1, cPixel.v)); // east
+        
     }
 
     QueueDestroy(&pixelQueue); // free queue memory
