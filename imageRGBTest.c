@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
   printf("13) Image Region Filling with STACK\n");
   Image feep_copy_stack = ImageCopy(feepImg);
 
-  pixels_changed = ImageRegionFillingWithSTACK(feep_copy_stack, 10, 3, 1);
+  pixels_changed = ImageRegionFillingWithSTACK(feep_copy_stack, 10, 3, 147);
   ImageSavePPM(feep_copy_stack, "img/feep_copy_stack.ppm");
   printf("PIXELS CHANGED STACK: %d\n", pixels_changed);
 

@@ -708,30 +708,36 @@ int ImageRegionFillingRecursive(Image img, int u, int v, uint16 label) {
 
   // TODO ImageRegionFillingRecursive
   
-  int pixelsChanged = 0;
+  unsigned int pixelsChanged = 0;
   // Label of seed
   uint16 oldLabel = img->image[v][u];
+  PIXMEM++;
   // Check if pixel's old label is already the same as the new one and if so return 0 as no pixels would need changing
   if(oldLabel == label) return pixelsChanged;
 
   // Change the label of current pixel to the new label
   img->image[v][u] = label;
   pixelsChanged++;
+  PIXMEM++;
 
   // If adjacent pixel is the same color as seed run the function again on it and add the return value of that call to pixels_changed
   if( ImageIsValidPixel(img, u+1, v) && oldLabel == img->image[v][u+1]){
+    PIXMEM++;   // Acessed pixel array for the comparison
     // Call function again for pixel on the right
     pixelsChanged += ImageRegionFillingRecursive(img, u+1 , v, label);
   }
   if( ImageIsValidPixel(img, u-1, v) && oldLabel == img->image[v][u-1]){
+    PIXMEM++;   // Acessed pixel array for the comparison
     // Call function again for pixel on the left
     pixelsChanged += ImageRegionFillingRecursive(img, u-1, v, label);
   }
   if( ImageIsValidPixel(img, u, v-1) && oldLabel == img->image[v-1][u]){
+    PIXMEM++;   // Acessed pixel array for the comparison
     // Call function again for pixel bellow
     pixelsChanged += ImageRegionFillingRecursive(img, u, v-1, label);
   }
   if( ImageIsValidPixel(img, u, v+1) && oldLabel == img->image[v+1][u]){
+    PIXMEM++;   // Acessed pixel array for the comparison
     // Call function again for pixel above
     pixelsChanged += ImageRegionFillingRecursive(img, u, v+1, label);
   }
@@ -754,7 +760,7 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
   // Stack to hold pixel coords (pixelStack)
   Stack* pStack = StackCreate(img->height*img->width);
   // Pixel from where to start the flood-filing algorithm
-  PixelCoords pixelStart = PixelCoordsCreate(u, v);
+  PixelCoords startPixel = PixelCoordsCreate(u, v);
   uint16 startLabel = img->image[v][u];
   PIXMEM++; // Acessed array to get startLabel
 
@@ -765,7 +771,7 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
   pixelsChanged++;
   PIXMEM++;
 
-  StackPush(pStack, pixelStart);
+  StackPush(pStack, startPixel);
 
   // Loop through stack's contents
   while(!StackIsEmpty(pStack)){
