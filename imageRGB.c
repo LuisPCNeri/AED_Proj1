@@ -708,36 +708,36 @@ int ImageRegionFillingRecursive(Image img, int u, int v, uint16 label) {
 
   // TODO ImageRegionFillingRecursive
   
-  int pixels_changed = 0;
+  int pixelsChanged = 0;
   // Label of seed
   uint16 oldLabel = img->image[v][u];
   // Check if pixel's old label is already the same as the new one and if so return 0 as no pixels would need changing
-  if(oldLabel == label) return pixels_changed;
+  if(oldLabel == label) return pixelsChanged;
 
   // Change the label of current pixel to the new label
   img->image[v][u] = label;
-  pixels_changed++;
+  pixelsChanged++;
 
   // If adjacent pixel is the same color as seed run the function again on it and add the return value of that call to pixels_changed
-  if((uint32) u+1 < img->width && oldLabel == img->image[v][u+1]){
+  if( ImageIsValidPixel(img, u+1, v) && oldLabel == img->image[v][u+1]){
     // Call function again for pixel on the right
-    pixels_changed += ImageRegionFillingRecursive(img, u+1 , v, label);
+    pixelsChanged += ImageRegionFillingRecursive(img, u+1 , v, label);
   }
-  if( (u-1) >= 0 && oldLabel == img->image[v][u-1]){
+  if( ImageIsValidPixel(img, u-1, v) && oldLabel == img->image[v][u-1]){
     // Call function again for pixel on the left
-    pixels_changed += ImageRegionFillingRecursive(img, u-1, v, label);
+    pixelsChanged += ImageRegionFillingRecursive(img, u-1, v, label);
   }
-  if( (v-1) >= 0 && oldLabel == img->image[v-1][u]){
+  if( ImageIsValidPixel(img, u, v-1) && oldLabel == img->image[v-1][u]){
     // Call function again for pixel bellow
-    pixels_changed += ImageRegionFillingRecursive(img, u, v-1, label);
+    pixelsChanged += ImageRegionFillingRecursive(img, u, v-1, label);
   }
-  if((uint32) v+1 < img->height && oldLabel == img->image[v+1][u]){
+  if( ImageIsValidPixel(img, u, v+1) && oldLabel == img->image[v+1][u]){
     // Call function again for pixel above
-    pixels_changed += ImageRegionFillingRecursive(img, u, v+1, label);
+    pixelsChanged += ImageRegionFillingRecursive(img, u, v+1, label);
   }
 
   // No pixels matched the similar color
-  return pixels_changed;
+  return pixelsChanged;
 }
 
 /// Region growing using a STACK of pixel coordinates to
@@ -748,9 +748,67 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
   assert(label < FIXED_LUT_SIZE);
 
   // TODO ImageRegionFillingWithSTACK
-  // ...
 
-  return 0;
+  unsigned int pixelsChanged = 0;
+
+  // Stack to hold pixel coords (pixelStack)
+  Stack* pStack = StackCreate(img->height*img->width);
+  // Pixel from where to start the flood-filing algorithm
+  PixelCoords pixelStart = PixelCoordsCreate(u, v);
+  uint16 startLabel = img->image[v][u];
+  PIXMEM++; // Acessed array to get startLabel
+
+  if(startLabel == label) return 0;
+
+  // Set start pixel to new label
+  img->image[v][u] = label;
+  pixelsChanged++;
+  PIXMEM++;
+
+  StackPush(pStack, pixelStart);
+
+  // Loop through stack's contents
+  while(!StackIsEmpty(pStack)){
+    // Use first item of stack (currentPixel)
+    PixelCoords cPixel = StackPop(pStack);
+
+    if( ImageIsValidPixel(img, cPixel.u+1, cPixel.v) && img->image[cPixel.v][cPixel.u+1] == startLabel ){
+      // Change pixel color
+      img->image[cPixel.v][cPixel.u+1] = label;
+      StackPush(pStack, PixelCoordsCreate(cPixel.u+1,cPixel.v));
+      // Increments
+      pixelsChanged++;
+      PIXMEM+=2;
+    }
+    if( ImageIsValidPixel(img, cPixel.u-1, cPixel.v) && img->image[cPixel.v][cPixel.u-1] == startLabel ){
+      // Change pixel color
+      img->image[cPixel.v][cPixel.u-1] = label;
+      StackPush(pStack, PixelCoordsCreate(cPixel.u-1,cPixel.v));
+      // Increments
+      pixelsChanged++;
+      PIXMEM+=2;
+    }
+    if( ImageIsValidPixel(img, cPixel.u, cPixel.v+1) && img->image[cPixel.v+1][cPixel.u] == startLabel ){
+      // Change pixel color
+      img->image[cPixel.v+1][cPixel.u] = label;
+      StackPush(pStack, PixelCoordsCreate(cPixel.u,cPixel.v+1));
+      // Increments
+      pixelsChanged++;
+      PIXMEM+=2;
+    }
+    if( ImageIsValidPixel(img, cPixel.u, cPixel.v-1) && img->image[cPixel.v-1][cPixel.u] == startLabel ){
+      // Change pixel color
+      img->image[cPixel.v-1][cPixel.u] = label;
+      StackPush(pStack, PixelCoordsCreate(cPixel.u,cPixel.v-1));
+      // Increments
+      pixelsChanged++;
+      PIXMEM+=2;
+    }
+  }
+
+  StackDestroy(&pStack);
+
+  return pixelsChanged;
 }
 
 /// Region growing using a QUEUE of pixel coordinates to
