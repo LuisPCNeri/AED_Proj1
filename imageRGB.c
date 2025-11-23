@@ -749,7 +749,6 @@ int ImageRegionFillingRecursive(Image img, int u, int v, uint16 label) {
   }
 
   // No pixels matched the similar color
-  printf("Image Memory Accesses: %ld\n", PIXMEM);
   return pixelsChanged;
 }
 
