@@ -13,7 +13,7 @@
 // Student authors (fill in below):
 // NMec: 125264
 // Name: Luís Pedro Costa Néri Correia
-// NMec:
+// NMec: 125260
 // Name: Guilherme Mendes Martins
 //
 // Date: 12/11/2025
@@ -287,11 +287,7 @@ void ImageDestroy(Image* imgp) {
 Image ImageCopy(const Image img) {
   assert(img != NULL);
 
-  // TODO ImageCopy
-  // Creates a new image with same width and height as the one passed as an argument
-
   Image copied_img = AllocateImageHeader(img->width, img->height);
-  //Image copied_img = ImageCreate(img->width, img->height);
 
   // Copy the amount of color labels used
   copied_img->num_colors = img->num_colors;
@@ -308,8 +304,6 @@ Image ImageCopy(const Image img) {
     for(uint32 k = 0; k < copied_img->width; k++){
       // Copy all information from given image to it's copy
       copied_img->image[i][k] = img->image[i][k];
-      // Once for each image
-      PIXMEM+=2;
     }
   }
 
@@ -582,14 +576,12 @@ int ImageIsEqual(const Image img1, const Image img2) {
   assert(img1 != NULL);
   assert(img2 != NULL);
 
-  // TODO ImageIsEqual
-
   COMPMEM+=2; // Two comparisons made, one for height and other for width
   if(img1->height != img2->height || img1->width != img2->width){
     // Print number of comparisons before exiting
     printf("COMPARISONS MADE: %ld\n", COMPMEM);
     COMPMEM = 0;    // Reset COMPMEM
-    
+
     return 0;
   }
 
@@ -599,9 +591,6 @@ int ImageIsEqual(const Image img1, const Image img2) {
 
       uint16 img1_index = img1->image[i][k];
       uint16 img2_index = img2->image[i][k];
-
-      // Pixel's array was accessed once for both images so
-      PIXMEM += 2;
 
       rgb_t img1_color = img1->LUT[img1_index];
       rgb_t img2_color = img2->LUT[img2_index];
@@ -639,8 +628,7 @@ int ImageIsDifferent(const Image img1, const Image img2) {
 /// On success, a new image is returned.
 /// (The caller is responsible for destroying the returned image!)
 
-/// Rotate 90 degrees clockwise (CW).// TODO ImageRotate90CW
-  // ...
+/// Rotate 90 degrees clockwise (CW).
 /// Returns a rotated version of the image.
 /// Ensures: The original img is not modified.
 ///
@@ -663,8 +651,6 @@ Image ImageRotate90CW(const Image img) {
     for(uint32 j = 0; j < rotatedImg->width; j++){
       // pixels are properly swapped (rotated)
       rotatedImg->image[i][j] = img->image[img->height - j - 1][i];
-      // Once for each image
-      PIXMEM+=2;
     }
   }
 
@@ -695,8 +681,6 @@ Image ImageRotate180CW(const Image img) {
     for(uint32 j = 0; j < rotatedImg->width; j++){
       // pixels are properly swapped (rotated)
       rotatedImg->image[i][j] = img->image[img->height - i - 1][img->width - j - 1];
-      // Once for each image
-      PIXMEM+=2;
     }
   }
 
@@ -732,8 +716,6 @@ int ImageRegionFillingRecursive(Image img, int u, int v, uint16 label) {
   assert(img != NULL);
   assert(ImageIsValidPixel(img, u, v));
   assert(label < FIXED_LUT_SIZE);
-
-  // TODO ImageRegionFillingRecursive
   
   unsigned int pixelsChanged = 0;
   // Label of seed
@@ -746,30 +728,28 @@ int ImageRegionFillingRecursive(Image img, int u, int v, uint16 label) {
   img->image[v][u] = label;
   pixelsChanged++;
   PIXMEM++;
-
+  
+  PIXMEM+=4; // As each condition is checked once accesses are made to img->image
   // If adjacent pixel is the same color as seed run the function again on it and add the return value of that call to pixels_changed
   if( ImageIsValidPixel(img, u+1, v) && oldLabel == img->image[v][u+1]){
-    PIXMEM++;   // Acessed pixel array for the comparison
     // Call function again for pixel on the right
     pixelsChanged += ImageRegionFillingRecursive(img, u+1 , v, label);
   }
   if( ImageIsValidPixel(img, u-1, v) && oldLabel == img->image[v][u-1]){
-    PIXMEM++;   // Acessed pixel array for the comparison
     // Call function again for pixel on the left
     pixelsChanged += ImageRegionFillingRecursive(img, u-1, v, label);
   }
   if( ImageIsValidPixel(img, u, v-1) && oldLabel == img->image[v-1][u]){
-    PIXMEM++;   // Acessed pixel array for the comparison
     // Call function again for pixel bellow
     pixelsChanged += ImageRegionFillingRecursive(img, u, v-1, label);
   }
   if( ImageIsValidPixel(img, u, v+1) && oldLabel == img->image[v+1][u]){
-    PIXMEM++;   // Acessed pixel array for the comparison
     // Call function again for pixel above
     pixelsChanged += ImageRegionFillingRecursive(img, u, v+1, label);
   }
 
   // No pixels matched the similar color
+  printf("Image Memory Accesses: %ld\n", PIXMEM);
   return pixelsChanged;
 }
 
@@ -780,7 +760,7 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
   assert(ImageIsValidPixel(img, u, v));
   assert(label < FIXED_LUT_SIZE);
 
-  // TODO ImageRegionFillingWithSTACK
+  PIXMEM=0;
 
   unsigned int pixelsChanged = 0;
 
@@ -813,6 +793,7 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
 
   StackDestroy(&pStack);
 
+  printf("Image Memory Accesses: %ld\n", PIXMEM);
   return pixelsChanged;
 }
 
@@ -824,6 +805,7 @@ int ImageRegionFillingWithQUEUE(Image img, int u, int v, uint16 label) {
     assert(ImageIsValidPixel(img, u, v));
     assert(label < FIXED_LUT_SIZE);
 
+    PIXMEM=0;
     unsigned int lPixels = 0; // labeled pixels
 
     PixelCoords startNode = PixelCoordsCreate(u, v);
@@ -853,6 +835,7 @@ int ImageRegionFillingWithQUEUE(Image img, int u, int v, uint16 label) {
     }
 
     QueueDestroy(&pixelQueue); // free queue memory
+    printf("Image Memory Accesses: %ld\n", PIXMEM);
     return lPixels;
 }
 

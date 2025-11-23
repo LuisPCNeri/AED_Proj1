@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "error.h"
 #include "imageRGB.h"
@@ -67,7 +68,7 @@ int main(int argc, char* argv[]) {
   Image image_3 = ImageCreatePalete(4 * 32, 4 * 32, 4);
   ImageSavePPM(image_3, "palete.ppm");
 
-  // Self made tests from here on out
+  //------------------------------Self made tests from here on out-----------------------------//
 
   printf("9) ImageIsEqual\n");
   Image feepImg = ImageLoadPPM("img/feep.ppm");
@@ -78,16 +79,12 @@ int main(int argc, char* argv[]) {
   if(ImageIsEqual(feepImg, copy_feep)) printf("Images are equal\n");
   else printf("Images are not equal\n");
 
-  ImageDestroy(&copy_feep);
-
   printf("10) Rotate 90 degress CW\n");
   Image feep_90 = ImageRotate90CW(feepImg);
   ImageSavePPM(feep_90, "img/feep_90.ppm");
 
   if(ImageIsEqual(feepImg, feep_90)) printf("Images are equal\n");
-  else printf("Images are not equal\n");
-
-  ImageDestroy(&feep_90);
+  else printf("Images are not equal\n");  
 
   printf("11) Rotate 180 degress CW\n");
   Image feep_180 = ImageRotate180CW(feepImg);
@@ -96,8 +93,7 @@ int main(int argc, char* argv[]) {
   if(ImageIsEqual(feepImg, feep_180)) printf("Images are equal\n");
   else printf("Images are not equal\n");
 
-  ImageDestroy(&feep_180);
-
+  __clock_t start = clock();
   printf("12) Recursive Region filling\n");
   Image feep_copy = ImageCopy(feepImg);
   ImageSavePPM(feep_copy, "img/feep_copy.ppm");
@@ -106,9 +102,11 @@ int main(int argc, char* argv[]) {
   ImageSavePPM(feep_copy, "img/feep_copy_rec.ppm");
   printf("PIXELS CHANGED: %d\n", pixels_changed);
 
-  if(ImageIsEqual(feepImg, feep_copy)) printf("Images are equal\n");
-  else printf("Images are not equal\n");
+  __clock_t end = clock();
 
+  printf("TIME ELAPSED: %f\n", (double) (end-start)/CLOCKS_PER_SEC);
+
+  start = clock();
 
   printf("13) Image Region Filling with STACK\n");
   Image feep_copy_stack = ImageCopy(feepImg);
@@ -117,11 +115,11 @@ int main(int argc, char* argv[]) {
   ImageSavePPM(feep_copy_stack, "img/feep_copy_stack.ppm");
   printf("PIXELS CHANGED STACK: %d\n", pixels_changed);
 
-  if(ImageIsEqual(feep_copy, feep_copy_stack)) printf("Images are equal\n");
-  else printf("Images are not equal\n");
+  end = clock();
 
-  ImageDestroy(&feep_copy);
-  ImageDestroy(&feep_copy_stack);
+  printf("TIME ELAPSED: %f\n", (double) (end-start)/CLOCKS_PER_SEC);
+
+  start = clock();
 
   printf("14) Flood fill with queue\n");
   Image floodFillQueueTestImg = ImageLoadPBM("chess_image_1.pbm");
@@ -129,10 +127,10 @@ int main(int argc, char* argv[]) {
   printf("PIXELS CHANGED QUEUE: %d\n", pixels_changed);
   ImageSavePPM(floodFillQueueTestImg, "img/floodFillQueueTestImg.ppm");
 
-  ImageDestroy(&floodFillQueueTestImg);
+  end = clock();
 
-  // ------------------------------------------
-  // chess img
+  printf("TIME ELAPSED: %f\n", (double) (end-start)/CLOCKS_PER_SEC);
+
   printf("15) Image Segmentation Recursive\n");
   Image segmentationTestImg = ImageLoadPBM("chess_image_1.pbm");
   int regFound = ImageSegmentation(segmentationTestImg, ImageRegionFillingRecursive);
@@ -150,6 +148,35 @@ int main(int argc, char* argv[]) {
   regFound = ImageSegmentation(segmentationTestImgQ, ImageRegionFillingWithQUEUE);
   printf("Found %d regions with QUEUE\n", regFound);
   ImageSavePPM(segmentationTestImgQ, "img/segmentationTestImgQ.ppm");
+
+
+  // -------------------------------------------------------------------------------------------//
+  //---------------------------Complexion tests for imageIsEqual--------------------------------//
+  // -------------------------------------------------------------------------------------------//
+
+  printf("\n\n\n--------------DIFFERENT SIZE IMG--------------\n");
+  ImageIsEqual(feep_90, feep_180);
+  
+  printf("\n--------------SAME SIZE IMG--------------\n");
+  printf("\tFEEP AND COPY FEEP\n");
+  ImageIsEqual(feepImg, copy_feep);
+
+  printf("\tCHESS AND COPY CHESS\n");
+  ImageIsEqual(image_chess_2, ImageCopy(image_chess_2));
+  printf("\t SEGMENTATION CHESS IMG\n");
+  ImageIsEqual(segmentationTestImgQ, segmentationTestImgS);
+  printf("\t RANDOM PIXEL DIFFERENT\n");
+  ImageIsEqual(feepImg, ImageLoadPPM("img/feep_1Pdiff.ppm"));
+
+  ImageDestroy(&copy_feep);
+
+  ImageDestroy(&feep_90);
+  ImageDestroy(&feep_180);
+  
+  ImageDestroy(&feep_copy);
+  ImageDestroy(&feep_copy_stack);
+
+  ImageDestroy(&floodFillQueueTestImg);
 
   ImageDestroy(&segmentationTestImg);
   ImageDestroy(&segmentationTestImgS);
