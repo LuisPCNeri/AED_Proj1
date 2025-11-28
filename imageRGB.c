@@ -647,6 +647,7 @@ Image ImageRotate90CW(const Image img) {
   }
 
   for(uint32 i = 0; i < rotatedImg->height; i++){
+    // Allocate space for the new image row
     rotatedImg->image[i] = AllocateRowArray(rotatedImg->width);
     for(uint32 j = 0; j < rotatedImg->width; j++){
       // pixels are properly swapped (rotated)
@@ -759,6 +760,7 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
   assert(ImageIsValidPixel(img, u, v));
   assert(label < FIXED_LUT_SIZE);
 
+  // Reset pixel memory acess counter
   PIXMEM=0;
 
   unsigned int pixelsChanged = 0;
@@ -790,6 +792,7 @@ int ImageRegionFillingWithSTACK(Image img, int u, int v, uint16 label) {
     if( ImageIsValidPixel(img, cPixel.u, cPixel.v-1) ) StackPush(pStack, PixelCoordsCreate(cPixel.u,cPixel.v-1));
   }
 
+  // Free memory allocated for stack
   StackDestroy(&pStack);
 
   printf("Image Memory Accesses: %ld\n", PIXMEM);
@@ -804,6 +807,7 @@ int ImageRegionFillingWithQUEUE(Image img, int u, int v, uint16 label) {
     assert(ImageIsValidPixel(img, u, v));
     assert(label < FIXED_LUT_SIZE);
 
+    // Reset pixel memory acess counter
     PIXMEM=0;
     unsigned int lPixels = 0; // labeled pixels
 
